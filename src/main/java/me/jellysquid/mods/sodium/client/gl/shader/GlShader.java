@@ -6,7 +6,6 @@ import net.minecraft.util.Identifier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL20C;
-import org.lwjgl.opengl.ARBParallelShaderCompile;
 
 /**
  * A compiled OpenGL shader object.
@@ -16,9 +15,6 @@ public class GlShader extends GlObject {
 
     private final Identifier name;
 
-    private static int getOptimalThreadCount() {
-        return Math.max(1, Runtime.getRuntime().availableProcessors());
-    }
     public GlShader(RenderDevice owner, ShaderType type, Identifier name, String src) {
         super(owner);
 
@@ -26,7 +22,6 @@ public class GlShader extends GlObject {
 
         int handle = GL20C.glCreateShader(type.id);
         ShaderWorkarounds.safeShaderSource(handle, src);
-        ARBParallelShaderCompile.glMaxShaderCompilerThreadsARB(getOptimalThreadCount());
         GL20C.glCompileShader(handle);
 
         String log = GL20C.glGetShaderInfoLog(handle);

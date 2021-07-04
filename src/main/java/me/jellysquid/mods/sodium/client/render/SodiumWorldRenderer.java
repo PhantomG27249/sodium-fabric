@@ -33,8 +33,6 @@ import net.minecraft.util.profiler.Profiler;
 
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.IntStream;
 
 /**
  * Provides an extension to vanilla's {@link WorldRenderer}.
@@ -342,7 +340,7 @@ public class SodiumWorldRenderer implements ChunkStatusListener {
         int maxY = MathHelper.floor(box.maxY + 0.5D) >> 4;
         int maxZ = MathHelper.floor(box.maxZ + 0.5D) >> 4;
 
-         for (int x = minX; x <= maxX; x++) {
+        for (int x = minX; x <= maxX; x++) {
             for (int z = minZ; z <= maxZ; z++) {
                 for (int y = minY; y <= maxY; y++) {
                     if (this.renderSectionManager.isSectionVisible(x, y, z)) {
@@ -351,27 +349,10 @@ public class SodiumWorldRenderer implements ChunkStatusListener {
                 }
             }
         }
-            return false;
+
+        return false;
     }
-/*
-*
-*         for (int x = minX; x <= maxX; x++) {
-            for (int z = minZ; z <= maxZ; z++) {
-                for (int y = minY; y <= maxY; y++) {
-                    if (this.renderSectionManager.isSectionVisible(x, y, z)) {
-                        return true;
-                    }
-                }
-            }
-        }
-*
-*
-*
-*
-*
-*
-*
-* */
+
     /**
      * @return The frustum of the current player's camera used to cull chunks
      */
@@ -396,122 +377,14 @@ public class SodiumWorldRenderer implements ChunkStatusListener {
      * Schedules chunk rebuilds for all chunks in the specified chunk region.
      */
     public void scheduleRebuildForChunks(int minX, int minY, int minZ, int maxX, int maxY, int maxZ, boolean important) {
-        int chunkX = scheduleRebuildForChunksX(minX, maxX);
-        int chunkY = scheduleRebuildForChunkY(minY, maxY);
-        int chunkZ = scheduleRebuildForChunkZ(minZ, maxZ);
-        this.scheduleRebuildForChunk(chunkX, chunkY, chunkZ, important);
-
-    }
- /*
- // Parallalel Inlined 95 ms
-        AtomicInteger chunkX = scheduleRebuildForChunksX(minX, maxX);
-        AtomicInteger chunkY = scheduleRebuildForChunksY(minY, maxY);
-        AtomicInteger chunkZ = scheduleRebuildForChunksZ(minZ, maxZ);
-
-
-///Serial Inlined While Loops 35-60ms
-        int chunkX = scheduleRebuildForChunksX(minX, maxX);
-        int chunkY = scheduleRebuildForChunkY(minY, maxY);
-        int chunkZ = scheduleRebuildForChunkZ(minZ, maxZ);
-        this.scheduleRebuildForChunk(chunkX, chunkY, chunkZ, important);
-
-
-/// Serial Nested Loop 65ms
         for (int chunkX = minX; chunkX <= maxX; chunkX++) {
             for (int chunkY = minY; chunkY <= maxY; chunkY++) {
                 for (int chunkZ = minZ; chunkZ <= maxZ; chunkZ++) {
                     this.scheduleRebuildForChunk(chunkX, chunkY, chunkZ, important);
                 }
             }
-       }
-//Semi parallel chunk scheduling 75-80ms
-        IntStream.range(minX, maxX).parallel().forEach(chunkX -> {
-            for (int chunkY = minY; chunkY <= maxY; chunkY++) {
-                for (int chunkZ = minZ; chunkZ <= maxZ; chunkZ++) {
-                    this.scheduleRebuildForChunk(chunkX, chunkY, chunkZ, important);
-                }
-            }
-        });
-//Stream based parallel Chunk Scheduling (214ms frametime spike)
-        IntStream.range(minX, maxX).parallel().forEach(chunkX -> {
-            IntStream.range(minY, maxY).parallel().forEach(chunkY -> {
-                IntStream.range(minZ, maxZ).parallel().forEachOrdered(chunkZ -> {
-                    this.scheduleRebuildForChunk(chunkX, chunkY, chunkZ, important);
-                });
-            });
-        });
-
         }
-        */
-//Parallel Entity Checking
-    /*
-    *
-    *         for (int x = minX; x <= maxX; x++) {
-            for (int z = minZ; z <= maxZ; z++) {
-                for (int y = minY; y <= maxY; y++) {
-                    if (this.renderSectionManager.isSectionVisible(x, y, z)) {
-                        return true;
-                    }
-                }
-            }
-        }
-    *
-    *
-    *
-    *
-    *
-    *
-    * */
- public AtomicInteger entitiyCheckX(int minX, int maxX){
-     AtomicInteger temp = new AtomicInteger();
-     IntStream.range(minX, maxX).parallel().forEachOrdered(entityX -> {
-         temp.set(entityX);
-     });
-     return temp;
- }
-
- public AtomicInteger entitiyCheckY(int minY, int maxY) {
-     AtomicInteger temp = new AtomicInteger();
-     IntStream.range(minY, maxY).parallel().forEachOrdered(entityY -> {
-         temp.set(entityY);
-     });
-     return temp;
- }
-
- public AtomicInteger entitiyCheckZ(int minZ, int maxZ){
-        AtomicInteger temp = new AtomicInteger();
-        IntStream.range(minZ, maxZ).parallel().forEachOrdered(entityZ -> {
-            temp.set(entityZ);
-        });
-        return temp;
- }
-
-
-
-    public int scheduleRebuildForChunksX(int minX, int maxX){
-        int chunkX = minX;
-        while (chunkX <= maxX) {
-            chunkX++;
-        }
-        return chunkX;
     }
-
-    public int scheduleRebuildForChunkY(int minY, int maxY){
-        int chunkY = minY;
-        while (chunkY <= maxY) {
-            chunkY++;
-        }
-        return chunkY;
-    }
-    public int scheduleRebuildForChunkZ(int minZ, int maxZ){
-        int chunkZ = minZ;
-        while (chunkZ <= maxZ) {
-            chunkZ++;
-        }
-        return chunkZ;
-
-    }
-
 
     /**
      * Schedules a chunk rebuild for the render belonging to the given chunk section position.
