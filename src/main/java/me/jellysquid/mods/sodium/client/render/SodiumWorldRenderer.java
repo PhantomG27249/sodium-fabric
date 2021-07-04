@@ -353,25 +353,7 @@ public class SodiumWorldRenderer implements ChunkStatusListener {
         }
             return false;
     }
-/*
-*
-*         for (int x = minX; x <= maxX; x++) {
-            for (int z = minZ; z <= maxZ; z++) {
-                for (int y = minY; y <= maxY; y++) {
-                    if (this.renderSectionManager.isSectionVisible(x, y, z)) {
-                        return true;
-                    }
-                }
-            }
-        }
-*
-*
-*
-*
-*
-*
-*
-* */
+
     /**
      * @return The frustum of the current player's camera used to cull chunks
      */
@@ -443,25 +425,7 @@ public class SodiumWorldRenderer implements ChunkStatusListener {
 
         }
         */
-//Parallel Entity Checking
-    /*
-    *
-    *         for (int x = minX; x <= maxX; x++) {
-            for (int z = minZ; z <= maxZ; z++) {
-                for (int y = minY; y <= maxY; y++) {
-                    if (this.renderSectionManager.isSectionVisible(x, y, z)) {
-                        return true;
-                    }
-                }
-            }
-        }
-    *
-    *
-    *
-    *
-    *
-    *
-    * */
+/*
  public AtomicInteger entitiyCheckX(int minX, int maxX){
      AtomicInteger temp = new AtomicInteger();
      IntStream.range(minX, maxX).parallel().forEachOrdered(entityX -> {
@@ -486,7 +450,7 @@ public class SodiumWorldRenderer implements ChunkStatusListener {
         return temp;
  }
 
-
+*/
 
     public int scheduleRebuildForChunksX(int minX, int maxX){
         int chunkX = minX;
