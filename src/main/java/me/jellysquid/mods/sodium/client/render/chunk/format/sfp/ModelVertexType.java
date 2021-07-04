@@ -15,11 +15,11 @@ import net.minecraft.client.render.VertexConsumer;
  */
 public class ModelVertexType implements ChunkVertexType {
     public static final GlVertexFormat<ChunkMeshAttribute> VERTEX_FORMAT = GlVertexFormat.builder(ChunkMeshAttribute.class, 24)
-            .addElement(ChunkMeshAttribute.OFFSET, 0, GlVertexAttributeFormat.UNSIGNED_BYTE, 3, false)
-            .addElement(ChunkMeshAttribute.POSITION, 4, GlVertexAttributeFormat.UNSIGNED_SHORT, 4, false)
-            .addElement(ChunkMeshAttribute.COLOR, 12, GlVertexAttributeFormat.UNSIGNED_BYTE, 4, true)
-            .addElement(ChunkMeshAttribute.BLOCK_TEXTURE, 16, GlVertexAttributeFormat.UNSIGNED_SHORT, 2, false)
-            .addElement(ChunkMeshAttribute.LIGHT_TEXTURE, 20, GlVertexAttributeFormat.UNSIGNED_SHORT, 2, true)
+            .addElement(ChunkMeshAttribute.OFFSET, (short) 0, GlVertexAttributeFormat.UNSIGNED_BYTE, 3, false)
+            .addElement(ChunkMeshAttribute.POSITION, (short) 4, GlVertexAttributeFormat.UNSIGNED_SHORT, 4, false)
+            .addElement(ChunkMeshAttribute.COLOR, (short) 12, GlVertexAttributeFormat.UNSIGNED_BYTE, 4, true)
+            .addElement(ChunkMeshAttribute.BLOCK_TEXTURE, (short) 16, GlVertexAttributeFormat.UNSIGNED_SHORT, 2, false)
+            .addElement(ChunkMeshAttribute.LIGHT_TEXTURE, (short) 20, GlVertexAttributeFormat.UNSIGNED_SHORT, 2, true)
             .build();
 
     private static final int POSITION_MAX_VALUE = 32768;
