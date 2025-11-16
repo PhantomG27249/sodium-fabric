@@ -127,10 +127,9 @@ public class GLRenderDevice implements RenderDevice {
         }
 
         @Override
-        public void allocateStorage(GlMutableBuffer buffer, long bufferSize, GlBufferUsage usage) {
-            this.bindBuffer(GlBufferTarget.ARRAY_BUFFER, buffer);
-
-            GL20C.glBufferData(GlBufferTarget.ARRAY_BUFFER.getTargetParameter(), bufferSize, usage.getId());
+        public void allocateStorage(GlMutableBuffer buffer, GlBufferTarget target, long bufferSize, GlBufferUsage usage) {
+            this.bindBuffer(target, buffer);
+            GL20C.glBufferData(target.getTargetParameter(), bufferSize, usage.getId());
             buffer.setSize(bufferSize);
         }
 
@@ -177,7 +176,7 @@ public class GLRenderDevice implements RenderDevice {
         }
 
         @Override
-        public GlBufferMapping mapBuffer(GlBuffer buffer, long offset, long length, EnumBitField<GlBufferMapFlags> flags) {
+        public GlBufferMapping mapBuffer(GlBuffer buffer, GlBufferTarget target, long offset, long length, EnumBitField<GlBufferMapFlags> flags) {
             if (buffer.getActiveMapping() != null) {
                 throw new IllegalStateException("Buffer is already mapped");
             }
@@ -203,15 +202,15 @@ public class GLRenderDevice implements RenderDevice {
                 }
             }
 
-            this.bindBuffer(GlBufferTarget.ARRAY_BUFFER, buffer);
+            this.bindBuffer(target, buffer);
 
-            ByteBuffer buf = GL32C.glMapBufferRange(GlBufferTarget.ARRAY_BUFFER.getTargetParameter(), offset, length, flags.getBitField());
+            ByteBuffer buf = GL32C.glMapBufferRange(target.getTargetParameter(), offset, length, flags.getBitField());
 
             if (buf == null) {
                 throw new RuntimeException("Failed to map buffer");
             }
 
-            GlBufferMapping mapping = new GlBufferMapping(buffer, buf);
+            GlBufferMapping mapping = new GlBufferMapping(buffer, buf, target);
 
             buffer.setActiveMapping(mapping);
 
@@ -224,8 +223,8 @@ public class GLRenderDevice implements RenderDevice {
 
             GlBuffer buffer = map.getBufferObject();
 
-            this.bindBuffer(GlBufferTarget.ARRAY_BUFFER, buffer);
-            GL32C.glUnmapBuffer(GlBufferTarget.ARRAY_BUFFER.getTargetParameter());
+            this.bindBuffer(map.getTarget(), buffer);
+            GL32C.glUnmapBuffer(map.getTarget().getTargetParameter());
 
             buffer.setActiveMapping(null);
             map.dispose();
@@ -258,18 +257,18 @@ public class GLRenderDevice implements RenderDevice {
         }
 
         @Override
-        public GlImmutableBuffer createImmutableBuffer(long bufferSize, EnumBitField<GlBufferStorageFlags> flags) {
+        public GlImmutableBuffer createImmutableBuffer(GlBufferTarget target, long bufferSize, EnumBitField<GlBufferStorageFlags> flags) {
             GlImmutableBuffer buffer = new GlImmutableBuffer(flags);
 
-            this.bindBuffer(GlBufferTarget.ARRAY_BUFFER, buffer);
+            this.bindBuffer(target, buffer);
             GLRenderDevice.this.functions.getBufferStorageFunctions()
-                    .createBufferStorage(GlBufferTarget.ARRAY_BUFFER, bufferSize, flags);
+                    .createBufferStorage(target, bufferSize, flags);
 
             return buffer;
         }
 
         @Override
-        public GlTessellation createTessellation(GlPrimitiveType primitiveType, TessellationBinding[] bindings) {
+        public GlTessellation createTessellation(GlPrimitiveType primitiveType, TessellationBinding... bindings) {
             GlVertexArrayTessellation tessellation = new GlVertexArrayTessellation(new GlVertexArray(), primitiveType, bindings);
             tessellation.init(this);
 
@@ -292,6 +291,14 @@ public class GLRenderDevice implements RenderDevice {
                     batch.pElementPointer,
                     batch.size,
                     batch.pBaseVertex);
+        }
+
+        @Override
+        public void multiDrawElementsIndirect(MultiDrawIndirectBuffer MdiDraw, GlIndexType indexType) {
+            GlPrimitiveType primitiveType = GLRenderDevice.this.activeTessellation.getPrimitiveType();
+
+            commandList.bindBuffer(GlBufferTarget.DRAW_INDIRECT_BUFFER, MdiDraw.getBuffer());
+            GL43C.glMultiDrawElementsIndirect(primitiveType.getId(), indexType.getFormatId(), 0, MdiDraw.size, 0);
         }
 
         @Override

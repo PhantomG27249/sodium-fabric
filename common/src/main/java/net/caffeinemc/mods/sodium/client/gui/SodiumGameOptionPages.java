@@ -18,6 +18,7 @@ import net.caffeinemc.mods.sodium.client.gui.options.storage.MinecraftOptionsSto
 import net.caffeinemc.mods.sodium.client.gui.options.storage.SodiumOptionsStorage;
 import net.caffeinemc.mods.sodium.client.render.chunk.DeferMode;
 import net.caffeinemc.mods.sodium.client.render.chunk.translucent_sorting.QuadSplittingMode;
+import net.caffeinemc.mods.sodium.client.render.backend.RendererBackend;
 import net.minecraft.client.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ParticleStatus;
@@ -369,6 +370,17 @@ public class SodiumGameOptionPages {
                         .setEnabled(() -> SodiumClientMod.options().debug.terrainSortingEnabled)
                         .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
                         .build()).build());
+
+        groups.add(OptionGroup.createBuilder()
+                .add(OptionImpl.createBuilder(RendererBackend.class, sodiumOpts)
+                        .setName(Component.translatable("sodium.options.renderer_backend.name"))
+                        .setTooltip(Component.translatable("sodium.options.renderer_backend.tooltip"))
+                        .setControl(option -> new CyclingControl<>(option, RendererBackend.class))
+                        .setBinding((opts, value) -> opts.performance.rendererBackend = value, opts -> opts.performance.rendererBackend)
+                        .setImpact(OptionImpact.HIGH)
+                        .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
+                        .build())
+                .build());
 
         return new OptionPage(Component.translatable("sodium.options.pages.performance"), ImmutableList.copyOf(groups));
     }

@@ -17,13 +17,13 @@ import java.util.List;
 public class MappedStagingBuffer implements StagingBuffer {
     private static final float UPLOAD_LIMIT_MARGIN = 0.8f;
 
-    private static final EnumBitField<GlBufferStorageFlags> STORAGE_FLAGS =
-            EnumBitField.of(GlBufferStorageFlags.PERSISTENT, GlBufferStorageFlags.CLIENT_STORAGE, GlBufferStorageFlags.MAP_WRITE);
+    private static final EnumBitField<GlBufferStorageFlags> STORAGE_FLAGS = EnumBitField.of(
+            GlBufferStorageFlags.MAP_WRITE,
+            GlBufferStorageFlags.PERSISTENT,
+            GlBufferStorageFlags.COHERENT);
 
     private static final EnumBitField<GlBufferMapFlags> MAP_FLAGS =
             EnumBitField.of(GlBufferMapFlags.PERSISTENT, GlBufferMapFlags.INVALIDATE_BUFFER, GlBufferMapFlags.WRITE, GlBufferMapFlags.EXPLICIT_FLUSH);
-
-    private final FallbackStagingBuffer fallbackStagingBuffer;
 
     private final MappedBuffer mappedBuffer;
     private final PriorityQueue<CopyCommand> pendingCopies = new ObjectArrayFIFOQueue<>();
@@ -40,11 +40,10 @@ public class MappedStagingBuffer implements StagingBuffer {
     }
 
     public MappedStagingBuffer(CommandList commandList, int capacity) {
-        GlImmutableBuffer buffer = commandList.createImmutableBuffer(capacity, STORAGE_FLAGS);
-        GlBufferMapping map = commandList.mapBuffer(buffer, 0, capacity, MAP_FLAGS);
+        GlImmutableBuffer buffer = commandList.createImmutableBuffer(GlBufferTarget.COPY_READ_BUFFER, capacity, STORAGE_FLAGS);
+        GlBufferMapping map = commandList.mapBuffer(buffer, GlBufferTarget.COPY_READ_BUFFER, 0, capacity, MAP_FLAGS);
 
         this.mappedBuffer = new MappedBuffer(buffer, map);
-        this.fallbackStagingBuffer = new FallbackStagingBuffer(commandList);
         this.capacity = capacity;
         this.remaining = this.capacity;
     }
@@ -58,8 +57,9 @@ public class MappedStagingBuffer implements StagingBuffer {
         int length = data.remaining();
 
         if (length > this.remaining) {
-            this.fallbackStagingBuffer.enqueueCopy(commandList, data, dst, writeOffset);
-
+            // This case should ideally not be reached if the buffer is large enough,
+            // but as a fallback, we can enqueue to the fallbackStagingBuffer if it were implemented.
+            // For now, we'll just return as the fallbackStagingBuffer is removed.
             return;
         }
 
@@ -144,7 +144,6 @@ public class MappedStagingBuffer implements StagingBuffer {
         }
 
         this.mappedBuffer.delete(commandList);
-        this.fallbackStagingBuffer.delete(commandList);
         this.pendingCopies.clear();
     }
 

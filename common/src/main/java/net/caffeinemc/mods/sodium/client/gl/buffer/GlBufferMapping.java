@@ -7,12 +7,14 @@ import java.nio.ByteBuffer;
 public class GlBufferMapping {
     private final GlBuffer buffer;
     private final ByteBuffer map;
+    private final GlBufferTarget target;
 
     protected boolean disposed;
 
-    public GlBufferMapping(GlBuffer buffer, ByteBuffer map) {
+    public GlBufferMapping(GlBuffer buffer, ByteBuffer map, GlBufferTarget target) {
         this.buffer = buffer;
         this.map = map;
+        this.target = target;
     }
 
     public void write(ByteBuffer data, int writeOffset) {
@@ -21,6 +23,10 @@ public class GlBufferMapping {
 
     public GlBuffer getBufferObject() {
         return this.buffer;
+    }
+
+    public GlBufferTarget getTarget() {
+        return this.target;
     }
 
     public void dispose() {

@@ -1,5 +1,6 @@
 package net.caffeinemc.mods.sodium.client.render.chunk.region;
 
+import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
@@ -21,10 +22,14 @@ import net.caffeinemc.mods.sodium.client.render.chunk.translucent_sorting.data.S
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Stream;
 
 public class RenderRegionManager {
+    private static final Logger LOGGER = LogUtils.getLogger();
     private final Long2ReferenceOpenHashMap<RenderRegion> regions = new Long2ReferenceOpenHashMap<>();
 
     private final StagingBuffer stagingBuffer;
@@ -241,5 +246,14 @@ public class RenderRegionManager {
         }
 
         return new FallbackStagingBuffer(commandList);
+    }
+
+    private static StagingBuffer createFallbackStagingBuffer(CommandList commandList) {
+        return new FallbackStagingBuffer(commandList);
+    }
+
+    public Stream<RenderRegion> stream() {
+        return this.regions.values()
+                .stream();
     }
 }

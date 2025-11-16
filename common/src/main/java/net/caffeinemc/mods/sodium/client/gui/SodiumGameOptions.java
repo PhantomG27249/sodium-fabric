@@ -6,6 +6,7 @@ import com.google.gson.GsonBuilder;
 import net.caffeinemc.mods.sodium.client.gui.options.TextProvider;
 import net.caffeinemc.mods.sodium.client.render.chunk.DeferMode;
 import net.caffeinemc.mods.sodium.client.render.chunk.translucent_sorting.QuadSplittingMode;
+import net.caffeinemc.mods.sodium.client.render.backend.RendererBackend;
 import net.caffeinemc.mods.sodium.client.services.PlatformRuntimeInformation;
 import net.caffeinemc.mods.sodium.client.util.FileUtil;
 import net.minecraft.client.GraphicsStatus;
@@ -49,6 +50,8 @@ public class SodiumGameOptions {
         public boolean useNoErrorGLContext = true;
 
         public QuadSplittingMode quadSplittingMode = QuadSplittingMode.SAFE;
+
+        public RendererBackend rendererBackend = RendererBackend.DEFAULT;
     }
 
     public static class AdvancedSettings {

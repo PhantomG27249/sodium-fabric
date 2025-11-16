@@ -4,8 +4,10 @@ import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.caffeinemc.mods.sodium.client.gl.arena.GlBufferArena;
 import net.caffeinemc.mods.sodium.client.gl.arena.staging.StagingBuffer;
 import net.caffeinemc.mods.sodium.client.gl.buffer.GlBuffer;
+import net.caffeinemc.mods.sodium.client.gl.buffer.GlBufferTarget;
 import net.caffeinemc.mods.sodium.client.gl.device.CommandList;
 import net.caffeinemc.mods.sodium.client.gl.device.MultiDrawBatch;
+import net.caffeinemc.mods.sodium.client.gl.device.MultiDrawIndirectBuffer;
 import net.caffeinemc.mods.sodium.client.gl.tessellation.GlTessellation;
 import net.caffeinemc.mods.sodium.client.model.quad.properties.ModelQuadFacing;
 import net.caffeinemc.mods.sodium.client.render.chunk.RenderSection;
@@ -58,6 +60,7 @@ public class RenderRegion {
     private DeviceResources resources;
 
     private final Map<TerrainRenderPass, MultiDrawBatch> cachedBatches = new Reference2ReferenceOpenHashMap<>();
+    private final Map<TerrainRenderPass, MultiDrawIndirectBuffer> MdiCachedBatches = new Reference2ReferenceOpenHashMap<>();
 
     public RenderRegion(int x, int y, int z, StagingBuffer stagingBuffer) {
         this.x = x;
@@ -126,10 +129,18 @@ public class RenderRegion {
             batch.delete();
         }
         this.cachedBatches.clear();
+
+        for (var batch : this.MdiCachedBatches.values()) {
+            batch.delete(commandList);
+        }
+        this.MdiCachedBatches.clear();
     }
 
     public void clearAllCachedBatches() {
         for (var batch : this.cachedBatches.values()) {
+            batch.clear();
+        }
+        for (var batch : this.MdiCachedBatches.values()) {
             batch.clear();
         }
     }
@@ -138,6 +149,10 @@ public class RenderRegion {
         var batch = this.cachedBatches.get(pass);
         if (batch != null) {
             batch.clear();
+        }
+        var MdiBatch = this.MdiCachedBatches.get(pass);
+        if (MdiBatch != null) {
+            MdiBatch.clear();
         }
     }
 
@@ -149,6 +164,17 @@ public class RenderRegion {
 
         batch = new MultiDrawBatch((ModelQuadFacing.COUNT * RenderRegion.REGION_SIZE) + 1);
         this.cachedBatches.put(pass, batch);
+        return batch;
+    }
+
+    public MultiDrawIndirectBuffer getMdiCachedBatch(TerrainRenderPass pass, CommandList commandList) {
+        MultiDrawIndirectBuffer batch = this.MdiCachedBatches.get(pass);
+        if (batch != null) {
+            return batch;
+        }
+
+        batch = new MultiDrawIndirectBuffer((ModelQuadFacing.COUNT * RenderRegion.REGION_SIZE) + 1, commandList);
+        this.MdiCachedBatches.put(pass, batch);
         return batch;
     }
 
@@ -268,8 +294,8 @@ public class RenderRegion {
         public DeviceResources(CommandList commandList, StagingBuffer stagingBuffer) {
             int stride = ChunkMeshFormats.COMPACT.getVertexFormat().getStride();
 
-            this.geometryArena = new GlBufferArena(commandList, REGION_SIZE * SECTION_VERTEX_COUNT_ESTIMATE, stride, stagingBuffer);
-            this.indexArena = new GlBufferArena(commandList, REGION_SIZE * SECTION_INDEX_COUNT_ESTIMATE, Integer.BYTES, stagingBuffer);
+            this.geometryArena = new GlBufferArena(commandList, REGION_SIZE * SECTION_VERTEX_COUNT_ESTIMATE, stride, stagingBuffer, GlBufferTarget.ARRAY_BUFFER);
+            this.indexArena = new GlBufferArena(commandList, REGION_SIZE * SECTION_INDEX_COUNT_ESTIMATE, Integer.BYTES, stagingBuffer, GlBufferTarget.ELEMENT_BUFFER);
         }
 
         public void updateTessellation(CommandList commandList, GlTessellation tessellation) {

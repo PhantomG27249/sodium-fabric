@@ -4,6 +4,8 @@ import net.caffeinemc.mods.sodium.client.gl.buffer.GlBuffer;
 import net.caffeinemc.mods.sodium.client.gl.buffer.GlBufferUsage;
 import net.caffeinemc.mods.sodium.client.gl.buffer.GlMutableBuffer;
 import net.caffeinemc.mods.sodium.client.gl.device.CommandList;
+import net.caffeinemc.mods.sodium.client.gl.buffer.GlBufferTarget;
+import net.caffeinemc.mods.sodium.client.gl.device.GLRenderDevice;
 
 import java.nio.ByteBuffer;
 
@@ -12,6 +14,8 @@ public class FallbackStagingBuffer implements StagingBuffer {
 
     public FallbackStagingBuffer(CommandList commandList) {
         this.fallbackBufferObject = commandList.createMutableBuffer();
+        commandList.allocateStorage(this.fallbackBufferObject, GlBufferTarget.COPY_WRITE_BUFFER, 0L, GlBufferUsage.STREAM_COPY);
+        commandList.flush();
     }
 
     @Override
@@ -22,7 +26,7 @@ public class FallbackStagingBuffer implements StagingBuffer {
 
     @Override
     public void flush(CommandList commandList) {
-        commandList.allocateStorage(this.fallbackBufferObject, 0L, GlBufferUsage.STREAM_COPY);
+        commandList.allocateStorage(this.fallbackBufferObject, GlBufferTarget.COPY_WRITE_BUFFER, 0L, GlBufferUsage.STREAM_COPY);
     }
 
     @Override

@@ -1,9 +1,6 @@
 package net.caffeinemc.mods.sodium.client.render.chunk;
 
-import net.caffeinemc.mods.sodium.client.gl.buffer.GlBuffer;
-import net.caffeinemc.mods.sodium.client.gl.buffer.GlBufferMapFlags;
-import net.caffeinemc.mods.sodium.client.gl.buffer.GlBufferUsage;
-import net.caffeinemc.mods.sodium.client.gl.buffer.GlMutableBuffer;
+import net.caffeinemc.mods.sodium.client.gl.buffer.*;
 import net.caffeinemc.mods.sodium.client.gl.device.CommandList;
 import net.caffeinemc.mods.sodium.client.gl.tessellation.GlIndexType;
 import net.caffeinemc.mods.sodium.client.gl.util.EnumBitField;
@@ -46,14 +43,21 @@ public class SharedQuadIndexBuffer {
     private void grow(CommandList commandList, int primitiveCount) {
         var bufferSize = primitiveCount * this.indexType.getBytesPerElement() * ELEMENTS_PER_PRIMITIVE;
 
-        commandList.allocateStorage(this.buffer, bufferSize, GlBufferUsage.STATIC_DRAW);
+        commandList.allocateStorage(this.buffer, GlBufferTarget.ELEMENT_BUFFER, bufferSize, GlBufferUsage.STATIC_DRAW);
 
-        var mapped = commandList.mapBuffer(this.buffer, 0, bufferSize, EnumBitField.of(GlBufferMapFlags.INVALIDATE_BUFFER, GlBufferMapFlags.WRITE, GlBufferMapFlags.UNSYNCHRONIZED));
+        var mapped = commandList.mapBuffer(this.buffer, GlBufferTarget.ELEMENT_BUFFER, 0, bufferSize, EnumBitField.of(GlBufferMapFlags.INVALIDATE_BUFFER, GlBufferMapFlags.WRITE, GlBufferMapFlags.UNSYNCHRONIZED));
         this.indexType.createIndexBuffer(mapped.getMemoryBuffer(), primitiveCount);
-
         commandList.unmap(mapped);
 
         this.maxPrimitives = primitiveCount;
+    }
+
+    public GlBuffer getBufferObject() {
+        return this.buffer;
+    }
+
+    public void delete(CommandList commandList) {
+        commandList.deleteBuffer(this.buffer);
     }
 
     public static NativeBuffer createIndexBuffer(IndexType indexType, int primitiveCount) {
@@ -63,14 +67,6 @@ public class SharedQuadIndexBuffer {
         indexType.createIndexBuffer(buffer.getDirectBuffer(), primitiveCount);
 
         return buffer;
-    }
-
-    public GlBuffer getBufferObject() {
-        return this.buffer;
-    }
-
-    public void delete(CommandList commandList) {
-        commandList.deleteBuffer(this.buffer);
     }
 
     public enum IndexType {

@@ -5,6 +5,8 @@ import net.caffeinemc.mods.sodium.client.gl.tessellation.GlIndexType;
 public interface DrawCommandList extends AutoCloseable {
     void multiDrawElementsBaseVertex(MultiDrawBatch batch, GlIndexType indexType);
 
+    void multiDrawElementsIndirect(MultiDrawIndirectBuffer MdiDraw, GlIndexType indexType);
+
     void endTessellating();
 
     void flush();

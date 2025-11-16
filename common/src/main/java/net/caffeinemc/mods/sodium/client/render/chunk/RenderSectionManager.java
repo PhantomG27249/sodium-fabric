@@ -121,7 +121,7 @@ public class RenderSectionManager {
     public RenderSectionManager(ClientLevel level, int renderDistance, SortBehavior sortBehavior, CommandList commandList) {
         this.meshTaskSizeEstimator = new MeshTaskSizeEstimator(level);
 
-        this.chunkRenderer = new DefaultChunkRenderer(RenderDevice.INSTANCE, ChunkMeshFormats.COMPACT);
+        this.chunkRenderer = ChunkRenderers.create(SodiumClientMod.options().performance.rendererBackend);
 
         this.level = level;
         this.builder = new ChunkBuilder(level, ChunkMeshFormats.COMPACT);

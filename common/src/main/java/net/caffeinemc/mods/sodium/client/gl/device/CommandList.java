@@ -13,9 +13,9 @@ import java.nio.ByteBuffer;
 public interface CommandList extends AutoCloseable {
     GlMutableBuffer createMutableBuffer();
 
-    GlImmutableBuffer createImmutableBuffer(long bufferSize, EnumBitField<GlBufferStorageFlags> flags);
+    GlImmutableBuffer createImmutableBuffer(GlBufferTarget target, long bufferSize, EnumBitField<GlBufferStorageFlags> flags);
 
-    GlTessellation createTessellation(GlPrimitiveType primitiveType, TessellationBinding[] bindings);
+    GlTessellation createTessellation(GlPrimitiveType primitiveType, TessellationBinding... bindings);
 
     void bindVertexArray(GlVertexArray array);
 
@@ -27,7 +27,7 @@ public interface CommandList extends AutoCloseable {
 
     void unbindVertexArray();
 
-    void allocateStorage(GlMutableBuffer buffer, long bufferSize, GlBufferUsage usage);
+    void allocateStorage(GlMutableBuffer buffer, GlBufferTarget target, long bufferSize, GlBufferUsage usage);
 
     void deleteBuffer(GlBuffer buffer);
 
@@ -44,7 +44,7 @@ public interface CommandList extends AutoCloseable {
         this.flush();
     }
 
-    GlBufferMapping mapBuffer(GlBuffer buffer, long offset, long length, EnumBitField<GlBufferMapFlags> flags);
+    GlBufferMapping mapBuffer(GlBuffer buffer, GlBufferTarget target, long offset, long length, EnumBitField<GlBufferMapFlags> flags);
 
     void unmap(GlBufferMapping map);
 

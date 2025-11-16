@@ -4,6 +4,7 @@ import net.caffeinemc.mods.sodium.client.gl.arena.staging.StagingBuffer;
 import net.caffeinemc.mods.sodium.client.gl.buffer.GlBuffer;
 import net.caffeinemc.mods.sodium.client.gl.buffer.GlBufferUsage;
 import net.caffeinemc.mods.sodium.client.gl.buffer.GlMutableBuffer;
+import net.caffeinemc.mods.sodium.client.gl.buffer.GlBufferTarget;
 import net.caffeinemc.mods.sodium.client.gl.device.CommandList;
 
 import java.nio.ByteBuffer;
@@ -37,19 +38,21 @@ public class GlBufferArena {
     private int segmentCount;
 
     private final int stride;
+    private final GlBufferTarget target;
 
     private static final GlMutableBuffer[] freeBuffers = new GlMutableBuffer[8];
     private static int freeBufferCount = 0;
 
-    public GlBufferArena(CommandList commands, int initialCapacity, int stride, StagingBuffer stagingBuffer) {
+    public GlBufferArena(CommandList commands, int initialCapacity, int stride, StagingBuffer stagingBuffer, GlBufferTarget target) {
         this.capacity = initialCapacity;
 
         this.stride = stride;
+        this.target = target;
 
         this.head = new GlBufferSegment(this, 0, this.capacity);
         this.head.setFree(true);
 
-        this.arenaBuffer = getBufferOfSizeAtLeast(commands, this.capacity * stride);
+        this.arenaBuffer = getBufferOfSizeAtLeast(commands, this.capacity * stride, this.target);
         this.capacity = this.arenaBuffer.getSize() / stride;
 
         this.stagingBuffer = stagingBuffer;
@@ -126,7 +129,7 @@ public class GlBufferArena {
         return pendingCopies;
     }
 
-    private static GlMutableBuffer getBufferOfSizeAtLeast(CommandList commandList, long size) {
+    private static GlMutableBuffer getBufferOfSizeAtLeast(CommandList commandList, long size, GlBufferTarget target) {
         GlMutableBuffer buffer = null;
 
         if (freeBufferCount > 0) {
@@ -154,7 +157,7 @@ public class GlBufferArena {
 
         if (buffer == null) {
             buffer = commandList.createMutableBuffer();
-            commandList.allocateStorage(buffer, size, BUFFER_USAGE);
+            commandList.allocateStorage(buffer, target, size, BUFFER_USAGE);
         }
         return buffer;
     }
@@ -184,7 +187,7 @@ public class GlBufferArena {
         }
 
         GlMutableBuffer srcBufferObj = this.arenaBuffer;
-        GlMutableBuffer dstBufferObj = getBufferOfSizeAtLeast(commandList, bufferSize);
+        GlMutableBuffer dstBufferObj = getBufferOfSizeAtLeast(commandList, bufferSize, this.target);
 
         for (PendingBufferCopyCommand cmd : list) {
             commandList.copyBufferSubData(srcBufferObj, dstBufferObj,
